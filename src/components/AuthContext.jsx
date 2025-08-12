@@ -67,24 +67,7 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   // Function to get the user profile
-  const getProfile = async (token) => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/auth/profile', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      // Use the profile data from the API, but fallback to a default image
-      const profileData = {
-        ...response.data.user,
-        profilePic: response.data.user.profilePic || 'https://randomuser.me/api/portraits/men/75.jpg',
-      };
-      setUser(profileData);
-    } catch (error) {
-      console.error('Failed to fetch user profile:', error);
-      logout(); // Log out if the profile fetch fails
-    }
-  };
+  
 
   // Function to handle login
   const login = async (phone, password) => {
@@ -119,7 +102,26 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     navigate('/');
   };
+const getProfile = async (token) => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/auth/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // Use the profile data from the API, but fallback to a default image
+      const profileData = {
+        ...response.data.user,
+        profilePic: response.data.user.profilePic || 'https://randomuser.me/api/portraits/men/75.jpg',
+      };
+      setUser(profileData);
+      
 
+    } catch (error) {
+      console.error('ok Failed to fetch user profile:', error);
+      logout(); // Log out if the profile fetch fails
+    }
+  };
   // Check for a token on initial load
   useEffect(() => {
     const token = localStorage.getItem('token');

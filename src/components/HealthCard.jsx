@@ -124,7 +124,7 @@ import Barcode from "react-barcode";
 
 const JanArogyaCard = () => {
   const [randomId, setRandomId] = useState("");
-
+  const name=localStorage.getItem("name")
   useEffect(() => {
     // Generate a random 12-digit ID
     const generateRandomId = () => {
@@ -204,7 +204,7 @@ const JanArogyaCard = () => {
         }}
       >
         <div>
-          <strong>Name</strong> : Hrishabh Gupta
+          <strong>Name</strong> : {name}
         </div>
         <div>
           <strong>Gender</strong> : Male

@@ -436,28 +436,62 @@ export default function Janarogycard() {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length === 0) {
-      setFormSubmitted(true);
-      setTimeout(() => setFormSubmitted(false), 4000);
-      generateCaptcha();
-      setFormData({
-        name: '',
-        aadhar: '',
-        mobile: '',
-        state: '',
-        district: '',
-        captcha: '',
-        incomeCert: null,
-        casteCert: null,
-        rationCard: null
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  const validationErrors = validate();
+  if (Object.keys(validationErrors).length === 0) {
+    const form = new FormData();
+    form.append("name", formData.name);
+    form.append("aadhar", formData.aadhar);
+    form.append("mobile", formData.mobile);
+    form.append("state", formData.state);
+    form.append("district", formData.district);
+    form.append("captcha", formData.captcha);
+
+    if (formData.incomeCert) form.append("income_certificate", formData.incomeCert);
+    if (formData.casteCert) form.append("caste_certificate", formData.casteCert);
+    if (formData.rationCard) form.append("ration_id", formData.rationCard);
+
+    try {
+      const token = localStorage.getItem("token"); // Assuming user token is stored here
+
+      const res = await fetch("http://localhost:8000/api/services/janarogya/user/apply"
+, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: form,
       });
-    } else {
-      setErrors(validationErrors);
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setFormSubmitted(true);
+        setTimeout(() => setFormSubmitted(false), 4000);
+        generateCaptcha();
+        setFormData({
+          name: '',
+          aadhar: '',
+          mobile: '',
+          state: '',
+          district: '',
+          captcha: '',
+          incomeCert: null,
+          casteCert: null,
+          rationCard: null,
+        });
+      } else {
+        alert(data.message || "Something went wrong");
+      }
+    } catch (err) {
+      alert("Network error. Please try again.");
     }
-  };
+  } else {
+    setErrors(validationErrors);
+  }
+};
+
 
   return (
     <section className="section services__v3 py-5" id="insurance">

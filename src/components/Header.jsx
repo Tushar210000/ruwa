@@ -784,7 +784,10 @@ export default function Header() {
                     alt="User"
                     style={{ width: 40, height: 40, borderRadius: '50%' }}
                   />
-                  <strong className="text-dark">{user.name || 'User'}</strong>
+                  <strong className="text-dark">
+  {user.name ? user.name.charAt(0).toUpperCase() + user.name.slice(1) : 'User'}
+</strong>
+
                 </div>
               ) : (
                 <Link className="logo-link" id="fbs__net-navbarsLabel" to="/">
@@ -934,7 +937,7 @@ export default function Header() {
                         marginRight: 8,
                       }}
                     />
-                    {user.name || 'User'}
+                   {user.name ? user.name.charAt(0).toUpperCase() + user.name.slice(1) : 'User'}
                   </button>
                   <ul
                     className="dropdown-menu"

@@ -4,7 +4,7 @@ import { Form, Button, Col, Row, Container, Image } from 'react-bootstrap';
 
 const Kendraform = () => {
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     email: '',
     phone: '',
     address: '',
@@ -23,7 +23,7 @@ const Kendraform = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.fullName) newErrors.fullName = 'Full Name is required';
+    if (!formData.name) newErrors.name = 'Full Name is required';
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Valid email required';
     if (!formData.phone || !/^\d{10}$/.test(formData.phone)) newErrors.phone = '10-digit phone number required';
     if (!formData.address) newErrors.address = 'Address is required';
@@ -47,13 +47,64 @@ const Kendraform = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validate()) {
-      console.log('Submitting:', formData);
-      alert('Form submitted successfully');
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (validate()) {
+    try {
+      const token = localStorage.getItem("token"); // user auth token
+
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("address", formData.address);
+      formDataToSend.append("businessType", formData.businessType);
+      formDataToSend.append("investmentCapacity", formData.investmentCapacity);
+      formDataToSend.append("proposedLocation", formData.proposedLocation);
+      formDataToSend.append("category", formData.category);
+      formDataToSend.append("franchiseCategory", formData.category); // maps to backend schema
+      formDataToSend.append("relevantExperience", formData.experience);
+
+      if (formData.idProof) formDataToSend.append("idProof", formData.idProof);
+      if (formData.qualificationCert) formDataToSend.append("qualificationCertificate", formData.qualificationCert);
+      if (formData.financialStatement) formDataToSend.append("financialStatement", formData.financialStatement);
+
+      const res = await fetch("http://localhost:8000/api/services/apply-kendra/apply", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formDataToSend
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Application submitted successfully!");
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          address: '',
+          businessType: '',
+          investmentCapacity: '',
+          proposedLocation: '',
+          category: '',
+          experience: '',
+          idProof: null,
+          qualificationCert: null,
+          financialStatement: null
+        });
+        setErrors({});
+      } else {
+        alert(data.message || "Something went wrong");
+      }
+    } catch (error) {
+      alert("Network error. Please try again.");
     }
-  };
+  }
+};
+
 
   return (
     <Container className="py-5">
@@ -75,8 +126,8 @@ const Kendraform = () => {
           <Col md={6}>
             <Form.Group className="mb-3">
               <Form.Label>Full Name</Form.Label>
-              <Form.Control type="text" name="fullName" value={formData.fullName} onChange={handleChange} isInvalid={!!errors.fullName} />
-              <Form.Control.Feedback type="invalid">{errors.fullName}</Form.Control.Feedback>
+              <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} isInvalid={!!errors.name} />
+              <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group className="mb-3">
