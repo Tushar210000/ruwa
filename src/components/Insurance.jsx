@@ -241,10 +241,47 @@ export default function Insurance() {
     setFormData((prev) => ({ ...prev, [name]: files ? files[0] : value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length === 0) {
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  const validationErrors = validate();
+  if (Object.keys(validationErrors).length === 0) {
+    try {
+      const token = localStorage.getItem("token"); // adjust if you store elsewhere
+      if (!token) {
+        alert("You must be logged in to apply for insurance.");
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append("fullName", formData.fullName);
+      fd.append("dob", formData.dob);
+      fd.append("gender", formData.gender);
+      fd.append("email", formData.email);
+      fd.append("phone", formData.phone);
+      fd.append("aadhar", formData.aadhar);
+      fd.append("address", formData.address);
+      fd.append("state", formData.state);
+      fd.append("district", formData.district);
+      fd.append("pincode", formData.pincode);
+      fd.append("insuranceType", formData.insuranceType);
+      fd.append("id_proof", formData.idProof);
+      fd.append("passport_photo", formData.photo);
+      fd.append("medical_documents", formData.medicalDoc);
+      fd.append("income_certificate", formData.incomeCert);
+
+      const res = await fetch("http://localhost:8000/api/services/apply-insurance/user/apply", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: fd
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Failed to submit insurance application");
+      }
+
       setFormSubmitted(true);
       setTimeout(() => setFormSubmitted(false), 4000);
       generateCaptcha();
@@ -266,10 +303,16 @@ export default function Insurance() {
         medicalDoc: null,
         incomeCert: null
       });
-    } else {
-      setErrors(validationErrors);
+      setErrors({});
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Something went wrong");
     }
-  };
+  } else {
+    setErrors(validationErrors);
+  }
+};
+
 
   return (
     <section className="section services__v3 py-5" id="insurance">

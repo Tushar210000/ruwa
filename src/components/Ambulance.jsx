@@ -173,8 +173,20 @@
 // }
 import React, { useState } from 'react';
 
+// import { useState } from "react";
+import axios from "axios";
+
 export default function Ambulance() {
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    hospitalPreference: "",
+    appointmentDate: "",
+    preferredTime: "",
+    message: ""
+  });
 
   const services = [
     {
@@ -220,15 +232,46 @@ export default function Ambulance() {
     }
   ];
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormSubmitted(true);
 
-    setTimeout(() => {
-      setFormSubmitted(false); // hide after 4 seconds
-    }, 4000);
+    try {
+      const token = localStorage.getItem("token"); // JWT token
+      await axios.post(
+        "http://localhost:8000/api/services/ambulance-booking/user/book",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    // You can also handle backend submission here
+      setFormSubmitted(true);
+      setFormData({
+        fullName: "",
+        phone: "",
+        email: "",
+        hospitalPreference: "",
+        appointmentDate: "",
+        preferredTime: "",
+        message: ""
+      });
+
+      setTimeout(() => {
+        setFormSubmitted(false);
+      }, 4000);
+    } catch (error) {
+      console.error("Booking failed:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Failed to book ambulance");
+    }
   };
 
   return (
@@ -272,31 +315,31 @@ export default function Ambulance() {
           <div className="row g-3">
             <div className="col-md-6">
               <label className="form-label">Full Name</label>
-              <input type="text" className="form-control" placeholder="Enter your full name" required />
+              <input name="fullName" value={formData.fullName} onChange={handleChange} type="text" className="form-control" placeholder="Enter your full name" required />
             </div>
             <div className="col-md-6">
               <label className="form-label">Phone Number</label>
-              <input type="tel" className="form-control" placeholder="e.g. 9876543210" required />
+              <input name="phone" value={formData.phone} onChange={handleChange} type="tel" className="form-control" placeholder="e.g. 9876543210" required />
             </div>
             <div className="col-md-6">
               <label className="form-label">Email</label>
-              <input type="email" className="form-control" placeholder="your@email.com" required />
+              <input name="email" value={formData.email} onChange={handleChange} type="email" className="form-control" placeholder="your@email.com" required />
             </div>
             <div className="col-md-6">
               <label className="form-label">Hospital Preference</label>
-              <input type="text" className="form-control" placeholder="Preferred hospital" />
+              <input name="hospitalPreference" value={formData.hospitalPreference} onChange={handleChange} type="text" className="form-control" placeholder="Preferred hospital" />
             </div>
             <div className="col-md-6">
               <label className="form-label">Appointment Date</label>
-              <input type="date" className="form-control" required />
+              <input name="appointmentDate" value={formData.appointmentDate} onChange={handleChange} type="date" className="form-control" required />
             </div>
             <div className="col-md-6">
               <label className="form-label">Preferred Time</label>
-              <input type="time" className="form-control" required />
+              <input name="preferredTime" value={formData.preferredTime} onChange={handleChange} type="time" className="form-control" required />
             </div>
             <div className="col-12">
               <label className="form-label">Message / Health Concern</label>
-              <textarea className="form-control" rows="4" placeholder="Describe your issue..." />
+              <textarea name="message" value={formData.message} onChange={handleChange} className="form-control" rows="4" placeholder="Describe your issue..." />
             </div>
           </div>
           <div className="text-center mt-4">

@@ -1,60 +1,3 @@
-// import React, { createContext, useState, useEffect, useContext } from 'react';
-
-// // Create Context
-// const AuthContext = createContext();
-
-// // Provider component
-// export const AuthProvider = ({ children }) => {
-//   const [user, setUser] = useState(null);
-
-//   // Load user from localStorage
-//   useEffect(() => {
-//     const storedUser = localStorage.getItem('ruwaUser');
-//     if (storedUser) {
-//       setUser(JSON.parse(storedUser));
-//     }
-//   }, []);
-
-//   // Login
-//   const login = (userData) => {
-//     localStorage.setItem('ruwaUser', JSON.stringify(userData));
-//     setUser(userData);
-//   };
-
-//   // Logout
-//   const logout = () => {
-//     localStorage.removeItem('ruwaUser');
-//     setUser(null);
-//   };
-
-//   return (
-//     <AuthContext.Provider value={{ user, login, logout }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-// // useAuth Hook
-// export const useAuth = () => useContext(AuthContext);
-// import { createContext, useContext, useState } from 'react';
-
-// const AuthContext = createContext();
-
-// export const AuthProvider = ({ children }) => {
-//   const [user, setUser] = useState(null);
-
-//   const login = (userData) => setUser(userData);
-//   const logout = () => setUser(null);
-
-//   return (
-//     <AuthContext.Provider value={{ user, login, logout }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-// export const useAuth = () => useContext(AuthContext);
-// src/context/AuthContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -65,9 +8,26 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
+ const token=localStorage.getItem("token")
   // Function to get the user profile
-  
+  const getProfile = async (token) => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/auth/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // Use the profile data from the API, but fallback to a default image
+      const profileData = {
+        ...response.data.user,
+        profilePic: response.data.user.profilePic || 'https://randomuser.me/api/portraits/men/75.jpg',
+      };
+      setUser(profileData);
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+      logout(); // Log out if the profile fetch fails
+    }
+  };
 
   // Function to handle login
   const login = async (phone, password) => {
@@ -102,26 +62,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     navigate('/');
   };
-const getProfile = async (token) => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/auth/profile', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      // Use the profile data from the API, but fallback to a default image
-      const profileData = {
-        ...response.data.user,
-        profilePic: response.data.user.profilePic || 'https://randomuser.me/api/portraits/men/75.jpg',
-      };
-      setUser(profileData);
-      
 
-    } catch (error) {
-      console.error('ok Failed to fetch user profile:', error);
-      logout(); // Log out if the profile fetch fails
-    }
-  };
   // Check for a token on initial load
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -140,4 +81,3 @@ const getProfile = async (token) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-
